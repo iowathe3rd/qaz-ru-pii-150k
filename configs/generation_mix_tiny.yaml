@@ -1,0 +1,49 @@
+target_count: 12
+seed: 20260523
+shard_size: 4
+generator_version: v1
+languages:
+  ru: 0.30
+  kk: 0.30
+  ru_kk: 0.30
+  ru_kk_en: 0.10
+surfaces:
+  call_center_asr: 0.45
+  chat: 0.20
+  crm_note: 0.15
+  formal_notice: 0.10
+  hard_negative: 0.10
+pii_density:
+  none: 0.15
+  low: 0.35
+  medium: 0.35
+  high: 0.15
+scenarios:
+  - identity_verification
+  - card_blocking
+  - sms_code_issue
+noise_types:
+  - clean
+  - asr_noise
+output:
+  raw_llm_dir: data/tiny/raw_llm
+  canonical_raw: data/tiny/canonical/raw.jsonl
+  canonical_validated: data/tiny/canonical/validated.jsonl
+  reports_dir: data/tiny/reports
+  splits_dir: data/tiny/splits
+  opf_dir: data/tiny/opf
+openai:
+  api_key: null
+  api_key_env: OPENAI_API_KEY
+  base_url: null
+  base_url_env: OPENAI_BASE_URL
+  model: gpt-5.1
+  temperature: 0.9
+  max_output_tokens: 6000
+  cache_dir: data/tiny/raw_llm
+temporal:
+  address: localhost:7233
+  namespace: default
+  task_queue: qaz-ru-pii-150k
+  shard_size: 4
+  max_concurrent_activities: 2

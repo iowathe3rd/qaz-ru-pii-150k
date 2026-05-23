@@ -1,6 +1,7 @@
 # Python-generated files
 __pycache__/
 *.py[oc]
+.pytest_cache/
 build/
 dist/
 wheels/
@@ -8,3 +9,12 @@ wheels/
 
 # Virtual environments
 .venv
+.env
+.env.*
+!.env.example
+configs/openai.yaml
+
+# Generated dataset artifacts
+data/
+reports/
+checkpoints/

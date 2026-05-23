@@ -1,0 +1,58 @@
+target_count: 100
+seed: 20260523
+shard_size: 20
+generator_version: smoke-real-v1
+
+# Reuse local runtime/provider configs. Keep credentials in configs/openai.yaml,
+# which is gitignored.
+openai_config_path: configs/openai.yaml
+temporal_config_path: configs/temporal.yaml
+
+languages:
+  ru: 0.25
+  kk: 0.25
+  ru_kk: 0.35
+  ru_kk_en: 0.15
+
+surfaces:
+  call_center_asr: 0.40
+  chat: 0.20
+  crm_note: 0.15
+  formal_notice: 0.10
+  hard_negative: 0.15
+
+pii_density:
+  none: 0.15
+  low: 0.30
+  medium: 0.35
+  high: 0.20
+
+scenarios:
+  - identity_verification
+  - card_blocking
+  - fraud_report
+  - suspicious_transaction
+  - transfer_issue
+  - phone_number_change
+  - password_reset
+  - mobile_app_login_issue
+  - sms_code_issue
+  - iban_request
+  - address_change
+  - personal_data_update
+
+noise_types:
+  - clean
+  - lowercase
+  - no_punctuation
+  - asr_noise
+  - code_switch
+  - fragmented
+
+output:
+  raw_llm_dir: data/smoke_real/raw_llm
+  canonical_raw: data/smoke_real/canonical/raw.jsonl
+  canonical_validated: data/smoke_real/canonical/validated.jsonl
+  reports_dir: data/smoke_real/reports
+  splits_dir: data/smoke_real/splits
+  opf_dir: data/smoke_real/opf

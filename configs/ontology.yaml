@@ -1,0 +1,73 @@
+labels:
+  person_name:
+    opf_label: private_person
+    marker_prefixes: [NAME, PERSON_NAME]
+  phone_kz:
+    opf_label: private_phone
+    marker_prefixes: [PHONE, PHONE_KZ]
+    validator: phone_kz
+  email:
+    opf_label: private_email
+    marker_prefixes: [EMAIL]
+    validator: email
+  address_kz:
+    opf_label: private_address
+    marker_prefixes: [ADDRESS, ADDRESS_KZ]
+  birth_date:
+    opf_label: private_date
+    marker_prefixes: [BIRTH_DATE]
+  issue_date:
+    opf_label: private_date
+    marker_prefixes: [ISSUE_DATE]
+  iin_kz:
+    opf_label: account_number
+    marker_prefixes: [IIN, IIN_KZ, ЖСН]
+    validator: iin_kz
+  bin_kz:
+    opf_label: account_number
+    marker_prefixes: [BIN, BIN_KZ, БИН]
+    validator: bin_kz
+  iban_kz:
+    opf_label: account_number
+    marker_prefixes: [IBAN, IBAN_KZ]
+    validator: iban_kz
+  card_pan:
+    opf_label: account_number
+    marker_prefixes: [CARD_PAN, PAN]
+    validator: card_pan
+  card_last4:
+    opf_label: account_number
+    marker_prefixes: [CARD_LAST4, LAST4]
+    validator: card_last4
+  contract_number:
+    opf_label: account_number
+    marker_prefixes: [CONTRACT, CONTRACT_NUMBER]
+  loan_id:
+    opf_label: account_number
+    marker_prefixes: [LOAN, LOAN_ID]
+  sms_code:
+    opf_label: secret
+    marker_prefixes: [SMS, SMS_CODE]
+    validator: sms_code
+  otp:
+    opf_label: secret
+    marker_prefixes: [OTP]
+    validator: otp
+  cvv:
+    opf_label: secret
+    marker_prefixes: [CVV]
+    validator: cvv
+  pin:
+    opf_label: secret
+    marker_prefixes: [PIN]
+    validator: pin
+  password:
+    opf_label: secret
+    marker_prefixes: [PASSWORD]
+  code_word:
+    opf_label: secret
+    marker_prefixes: [CODE_WORD, SECRET_WORD]
+  private_url:
+    opf_label: private_url
+    marker_prefixes: [PRIVATE_URL, URL]
+    validator: private_url

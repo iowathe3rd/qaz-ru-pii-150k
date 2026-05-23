@@ -1,7 +1,7 @@
 [project]
 name = "qaz-ru-pii-150k"
 version = "0.1.0"
-description = "Add your description here"
+description = "Synthetic RU/KK Kazakhstan banking PII dataset generator for OpenAI Privacy Filter"
 readme = "README.md"
 authors = [
     { name = "Baurzhan Beglerov", email = "bbeglerov@icloud.com" }
@@ -9,11 +9,20 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "openai>=2.38.0",
+    "pydantic>=2.13.4",
+    "pytest>=9.0.3",
+    "pyyaml>=6.0.3",
+    "rich>=15.0.0",
     "temporalio>=1.27.2",
+    "typer>=0.25.1",
 ]
 
 [project.scripts]
-qaz-ru-pii-150k = "qaz_ru_pii_150k:main"
+qaz-ru-pii-150k = "qaz_ru_pii_150k.cli:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
 
 [build-system]
 requires = ["uv_build>=0.9.24,<0.10.0"]
