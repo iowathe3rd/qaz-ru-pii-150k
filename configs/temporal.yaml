@@ -1,0 +1,5 @@
+address: localhost:7233
+namespace: default
+task_queue: qaz-ru-pii-150k
+shard_size: 100
+max_concurrent_activities: 4

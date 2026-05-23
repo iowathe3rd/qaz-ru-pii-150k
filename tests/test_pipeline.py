@@ -9,6 +9,7 @@ from qaz_ru_pii_150k.llm import FakeTemplateProvider
 from qaz_ru_pii_150k.ontology import Ontology
 from qaz_ru_pii_150k.split import split_dataset
 from qaz_ru_pii_150k.validators import validate_file
+from qaz_ru_pii_150k.llm import NOISE_TYPES, TEMPLATE_SCHEMA
 
 
 def test_tiny_pipeline(tmp_path: Path) -> None:
@@ -39,3 +40,12 @@ def test_tiny_pipeline(tmp_path: Path) -> None:
 
     exported = export_opf(splits / "train.jsonl", opf, mode="opf8")
     assert exported == 9
+
+
+def test_dirty_asr_noise_types_are_in_schema() -> None:
+    noise_enum = (
+        TEMPLATE_SCHEMA["properties"]["records"]["items"]["properties"]["meta"]["properties"]["noise_type"]["enum"]
+    )
+
+    assert set(NOISE_TYPES) == set(noise_enum)
+    assert {"bad_asr", "mixed_digits_words", "broken_names", "interruptions"} <= set(noise_enum)

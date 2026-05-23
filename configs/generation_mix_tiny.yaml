@@ -25,6 +25,9 @@ scenarios:
 noise_types:
   - clean
   - asr_noise
+  - bad_asr
+  - mixed_digits_words
+  - broken_names
 output:
   raw_llm_dir: data/tiny/raw_llm
   canonical_raw: data/tiny/canonical/raw.jsonl

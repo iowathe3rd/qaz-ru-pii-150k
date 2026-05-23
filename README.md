@@ -34,6 +34,12 @@ The LLM returns raw records with template markers and a separate value object:
 The code then deterministically injects values left-to-right and computes exact
 character offsets. The LLM never returns offsets.
 
+The main 150k and real smoke configs are call-center first: `call_center_asr`
+gets 70% of the surface mix, with chat, CRM notes, formal notices, and hard
+negatives used as supporting slices. The prompt explicitly asks for dirty ASR:
+broken names, repeated fragments, interruptions, lowercase/no punctuation, and
+numbers spoken in Russian/Kazakh or mixed with digits.
+
 Canonical JSONL keeps rich metadata and fine labels. OPF export writes the
 Privacy Filter train/eval schema:
 

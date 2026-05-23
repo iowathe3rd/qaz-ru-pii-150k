@@ -15,17 +15,17 @@ languages:
   ru_kk_en: 0.15
 
 surfaces:
-  call_center_asr: 0.40
-  chat: 0.20
-  crm_note: 0.15
-  formal_notice: 0.10
-  hard_negative: 0.15
+  call_center_asr: 0.70
+  chat: 0.10
+  crm_note: 0.08
+  formal_notice: 0.04
+  hard_negative: 0.08
 
 pii_density:
-  none: 0.15
-  low: 0.30
-  medium: 0.35
-  high: 0.20
+  none: 0.10
+  low: 0.25
+  medium: 0.40
+  high: 0.25
 
 scenarios:
   - identity_verification
@@ -48,6 +48,13 @@ noise_types:
   - asr_noise
   - code_switch
   - fragmented
+  - bad_asr
+  - spoken_digits_ru
+  - spoken_digits_kk
+  - mixed_digits_words
+  - broken_names
+  - interruptions
+  - repeated_fragments
 
 output:
   raw_llm_dir: data/smoke_real/raw_llm

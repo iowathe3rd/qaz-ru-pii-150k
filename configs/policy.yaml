@@ -1,0 +1,14 @@
+public_entities:
+  - Береке Банк
+  - Kaspi
+  - Halyk
+  - Visa
+  - Mastercard
+  - Нацбанк
+forbidden_value_substrings:
+  - openai.com
+  - example.com
+hard_negative_rules:
+  - City-only mentions such as "город Алматы" are not private_address.
+  - Public bank names and card product names are not private_person.
+  - Error, tariff, queue, and public branch codes are not account_number without customer-linked context.

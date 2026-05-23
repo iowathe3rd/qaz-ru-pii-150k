@@ -32,6 +32,22 @@ ALLOWED_LABELS = [
     "private_url",
 ]
 
+NOISE_TYPES = [
+    "clean",
+    "lowercase",
+    "no_punctuation",
+    "asr_noise",
+    "code_switch",
+    "fragmented",
+    "bad_asr",
+    "spoken_digits_ru",
+    "spoken_digits_kk",
+    "mixed_digits_words",
+    "broken_names",
+    "interruptions",
+    "repeated_fragments",
+]
+
 MARKER_LABEL_MAPPING = {
     "{{NAME_1}}": "person_name",
     "{{PHONE_1}}": "phone_kz",
@@ -89,7 +105,7 @@ TEMPLATE_SCHEMA: dict[str, object] = {
                             "surface": {"type": "string", "enum": ["call_center_asr", "chat", "crm_note", "formal_notice", "hard_negative"]},
                             "scenario": {"type": "string"},
                             "pii_density": {"type": "string", "enum": ["none", "low", "medium", "high"]},
-                            "noise_type": {"type": "string"},
+                            "noise_type": {"type": "string", "enum": NOISE_TYPES},
                             "hard_negative": {"type": "boolean"},
                         },
                     },
@@ -159,6 +175,32 @@ class FakeTemplateProvider(TemplateProvider):
                     + f" синтетический пример {seed}-{idx}"
                 )
                 record_values = {}
+            elif generation_slice.surface == "call_center_asr" and generation_slice.noise_type in {
+                "bad_asr",
+                "mixed_digits_words",
+                "spoken_digits_ru",
+                "broken_names",
+                "interruptions",
+                "repeated_fragments",
+            }:
+                template = rng.choice(
+                    [
+                        "алло алло да слышно я не могу зайти в приложение меня зовут {{NAME_1}} иин {{IIN_1}} нет не так пятьсот пятьдесят это код {{SMS_1}}",
+                        "здравствуйте связь плохая фио {{NAME_1}} номер восемь семь ноль семь {{PHONE_1}} карта последние четыре {{CARD_LAST4_1}}",
+                        "сәлеметсіз бе менің атым {{NAME_1}} жсн {{IIN_1}} смс кодын айтам {{SMS_1}} тағы қайталайын",
+                    ]
+                )
+                record_values = {
+                    "NAME_1": {"label": "person_name", "value": values["name_noisy"]},
+                    "IIN_1": {"label": "iin_kz", "value": values["iin_spoken"]},
+                    "SMS_1": {"label": "sms_code", "value": values["sms_spoken"]},
+                }
+                if "{{PHONE_1}}" in template:
+                    record_values = {
+                        "NAME_1": {"label": "person_name", "value": values["name_noisy"]},
+                        "PHONE_1": {"label": "phone_kz", "value": values["phone_spoken"]},
+                        "CARD_LAST4_1": {"label": "card_last4", "value": values["last4_spoken"]},
+                    }
             elif generation_slice.language == "kk":
                 template = "сәлеметсіз бе менің жсн {{IIN_1}} атым {{NAME_1}} sms код {{SMS_1}}"
                 record_values = {
@@ -209,12 +251,16 @@ Each record must follow this structure:
     "surface": "call_center_asr|chat|crm_note|formal_notice|hard_negative",
     "scenario": "banking_scenario",
     "pii_density": "none|low|medium|high",
-    "noise_type": "clean|lowercase|no_punctuation|asr_noise|code_switch|fragmented",
+    "noise_type": "clean|lowercase|no_punctuation|asr_noise|code_switch|fragmented|bad_asr|spoken_digits_ru|spoken_digits_kk|mixed_digits_words|broken_names|interruptions|repeated_fragments",
     "hard_negative": true|false
   }
 }
 
 Do not generate spans, offsets, start/end fields, OPF labels, markdown, prose, or extra keys.
+
+Domain priority:
+- The primary domain is dirty Kazakhstan bank call-center ASR. Most generated records should sound like real low-quality phone transcripts from bank support calls.
+- Chat, CRM notes, formal notices, and hard negatives are supporting domains; keep them realistic, but do not let them dominate when the requested surface is call_center_asr.
 
 Template and marker rules:
 - Use Kazakhstan banking, call-center, messenger support, formal notice, and CRM domains.
@@ -222,6 +268,7 @@ Template and marker rules:
 - Every marker in template must have exactly one key in values.
 - values must not contain markers that are absent from template.
 - Do not reuse the same exact marker more than once in one template; for repeated entity types use {{NAME_1}}, {{NAME_2}}, etc.
+- The allowed marker list contains examples with suffix _1. You may increment suffixes (_2, _3, ...) for repeated entities, but the prefix must stay in the marker-label mapping.
 - Do not put raw private values directly in template. Any private name, phone, email, address, ID, card, secret, URL, date, contract, or loan value must appear as a marker and as a values entry.
 - Each marker prefix must match its values entry label according to the mapping supplied in the user input.
 - Use only the allowed labels supplied in the user input.
@@ -237,8 +284,17 @@ KZ banking context and style:
 - Use Russian, Kazakh, mixed RU/KK, and RU/KK/EN banking-tech code switching as requested.
 - Surfaces include ASR call transcripts, chat/messenger, CRM notes, formal notices, and hard negatives.
 - Make examples realistic for Kazakhstan banking communication.
-- Apply the requested noise_type: lowercase, no punctuation, ASR repeats, incomplete fragments, digit words in RU/KK, Cyrillic/Latin mixing, or clean text.
+- Apply the requested noise_type: lowercase, no punctuation, ASR repeats, incomplete fragments, digit words in RU/KK, Cyrillic/Latin mixing, bad ASR, broken names, interruptions, repeated fragments, or clean text.
 - Match the requested pii_density: none, low, medium, or high.
+
+Dirty call-center ASR requirements:
+- Include disfluencies and fragments: "алло", "да да", "нет не так", "повторите", "слышно плохо", "секунду", "мм", "ээ", cut-off phrases, repeated words.
+- Names can be ASR-broken or split: "сейд ахметова", "нур пеисов", "ә б д і рахман", while the value still remains the exact text inserted for the marker.
+- Numbers can appear in many spoken forms, not only clean digits: "550", "пятьсот пятьдесят", "пять сот пятьдесят", "бес жүз елу", "семь ноль семь", mixed digit/word sequences.
+- Phones, IIN/JСН, SMS/OTP, card last4, PIN/CVV, dates, and account numbers should appear as clean digits, spaced digits, grouped digits, Russian spoken numbers, Kazakh spoken numbers, and mixed digit-word forms across records.
+- Preserve the exact marker/value contract even for dirty values: if the user says an IIN as words, put the spoken form in values.IIN_1.value and use {{IIN_1}} in template.
+- Do not normalize dirty values in values. The value must be the exact surface text that will be inserted.
+- Include realistic call-center scenarios: login issue, SMS code issue, card block/unblock, fraud report, suspicious transaction, transfer issue, phone change, address update, loan payment, chargeback, statement request.
 
 Good record examples inside the records array:
 {
@@ -295,7 +351,20 @@ def build_prompt(generation_slice: GenerationSlice, *, seed: int) -> str:
                 *MARKER_LABEL_MAPPING,
             ],
             "marker_label_mapping": MARKER_LABEL_MAPPING,
+            "marker_numbering_rule": "The listed markers are examples. For repeated entities, increment the numeric suffix, e.g. {{NAME_2}}, {{PHONE_2}}, while preserving the same prefix-label mapping.",
             "allowed_labels": ALLOWED_LABELS,
+            "allowed_noise_types": NOISE_TYPES,
+            "domain_priority": {
+                "primary": "dirty low-quality Kazakhstan bank call-center ASR",
+                "supporting": ["chat", "crm_note", "formal_notice", "hard_negative"],
+            },
+            "dirty_asr_requirements": [
+                "Use broken names and split surnames where requested.",
+                "Use spoken numbers in Russian and Kazakh, mixed with digits.",
+                "Use interruptions, repeats, filler words, and incomplete phrases.",
+                "Keep marker values equal to the exact noisy text to be inserted.",
+                "Do not normalize noisy values to clean canonical forms.",
+            ],
             "output_contract": {
                 "top_level": "Return exactly one JSON object: {'records': [record, ...]}.",
                 "record_keys": ["template", "values", "meta"],
@@ -315,10 +384,21 @@ def _fake_values(seed: int) -> dict[str, str]:
     return {
         "name_ru": rng.choice(["Айжан Сейдахметова", "Нурлан Абдрахманов", "Бауыржан Нурпеисов"]),
         "name_kk": rng.choice(["Айжан Сейдахметова", "Нұрлан Әбдірахманұлы", "Бауыржан Нұрпейісов"]),
+        "name_noisy": rng.choice(["айжан сейд ахметова", "нур лан абд рахманов", "бауыр жан нур пеисов"]),
         "iin": iin,
+        "iin_spoken": rng.choice(
+            [
+                "ноль один ноль два ноль три пять ноль ноль один два три",
+                "нөл бір нөл екі нөл үш бес нөл нөл бір екі үш",
+                iin[:2] + " " + iin[2:5] + " " + iin[5:8] + " " + iin[8:],
+            ]
+        ),
         "sms": f"{rng.randrange(0, 10**6):06d}",
+        "sms_spoken": rng.choice(["пять сот пятьдесят", "пятьсот пятьдесят", "бес жүз елу", f"{rng.randrange(1000, 9999)}"]),
         "last4": last4,
+        "last4_spoken": rng.choice(["четыре восемь два один", "төрт сегіз екі бір", last4]),
         "phone": f"+7 7{rng.randrange(0, 100):02d} {rng.randrange(0, 1000):03d} {rng.randrange(0, 100):02d} {rng.randrange(0, 100):02d}",
+        "phone_spoken": rng.choice(["восемь семьсот семь двадцать три сорок пять шестьдесят семь", "сегіз жеті жүз жеті жиырма үш қырық бес алпыс жеті"]),
         "email": f"user{rng.randrange(1000, 9999)}@synthetic.kz",
         "contract": f"CN-{rng.randrange(100000, 999999)}",
     }
