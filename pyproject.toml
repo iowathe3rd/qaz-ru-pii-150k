@@ -1,0 +1,20 @@
+[project]
+name = "qaz-ru-pii-150k"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Baurzhan Beglerov", email = "bbeglerov@icloud.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "openai>=2.38.0",
+    "temporalio>=1.27.2",
+]
+
+[project.scripts]
+qaz-ru-pii-150k = "qaz_ru_pii_150k:main"
+
+[build-system]
+requires = ["uv_build>=0.9.24,<0.10.0"]
+build-backend = "uv_build"
